@@ -21,7 +21,7 @@ func (p *Processor) DefaultCSV(fileName string) error {
 	}
 	writer := csv.NewWriter(file)
 
-	title := []string{"旧文件名", "新文件名", "发票代号", "发票号码", "日期", "货物名", "金额", "税额", "价税合计", "销售方名称"}
+	title := []string{"旧文件名", "新文件名", "发票代号", "发票号码", "日期", "货物名", "金额", "税额", "价税合计", "销售方名称", "购买方", "购买方地址", "税号"}
 	err = writer.Write(title)
 	if err != nil {
 		return err
@@ -45,7 +45,10 @@ func (p *Processor) DefaultCSV(fileName string) error {
 			fmt.Sprintf(`"%s"`, v.WordsResult.TotalAmount),
 			fmt.Sprintf(`"%s"`, v.WordsResult.TotalTax),
 			fmt.Sprintf(`"%s"`, v.WordsResult.AmountInFiguers),
-			fmt.Sprintf(`"%s"`, v.WordsResult.SellerName),
+			v.WordsResult.SellerName,
+			v.WordsResult.PurchaserName,
+			v.WordsResult.PurchaserAddress,
+			v.WordsResult.PurchaserRegisterNum,
 		}
 		err := writer.Write(values)
 		if err != nil {
