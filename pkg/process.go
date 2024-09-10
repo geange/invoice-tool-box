@@ -3,13 +3,13 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cheggaaa/pb/v3"
-	"github.com/tidwall/gjson"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/cheggaaa/pb/v3"
 	"github.com/geange/invoice-toolbox/sdk"
+	"github.com/tidwall/gjson"
 )
 
 func (p *Processor) Run() error {
@@ -21,7 +21,7 @@ func (p *Processor) Run() error {
 			//log.Println(err.Error())
 			p.pushFailFile(v.Name)
 		}
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(1 * time.Second)
 	}
 	return nil
 }
@@ -62,7 +62,22 @@ func (p *Processor) deal(v *File) error {
 	}
 
 	if !isImage(picContent, v.Name) {
-		return err
+		if isPDF(v.Name) {
+			jpegPath := p.srcPath(v.Name) + ".jpeg"
+			err := convertPDFToJPEG(p.srcPath(v.Name), jpegPath)
+			if err != nil {
+				return err
+			}
+			picContent, err = os.ReadFile(jpegPath)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				_ = os.Remove(jpegPath)
+			}()
+		} else {
+			return err
+		}
 	}
 
 	invoice, err := p.sdk.VatInvoice(p.token, picContent)
@@ -95,6 +110,12 @@ func (p *Processor) deal(v *File) error {
 			return err
 		}
 		defer newFile.Close()
+
+		// 重新读取一次内容
+		picContent, err := os.ReadFile(p.srcPath(v.Name))
+		if err != nil {
+			return err
+		}
 
 		_, err = newFile.Write(picContent)
 		if err != nil {

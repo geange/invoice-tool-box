@@ -127,6 +127,43 @@ func (p *Processor) loadFiles() error {
 	return nil
 }
 
+func (p *Processor) dealPDF() error {
+	entries, err := os.ReadDir(p.dir)
+	if err != nil {
+		return err
+	}
+
+	allFiles := make(map[string]bool)
+
+	for _, entry := range entries {
+		fileInfo, err := entry.Info()
+		if err != nil {
+			return err
+		}
+
+		if fileInfo.IsDir() {
+			continue
+		}
+
+		allFiles[entry.Name()] = true
+	}
+
+	for filename := range allFiles {
+
+		if isPDF(filename) {
+			jpegPath := p.srcPath(filename) + ".jpeg"
+			if !allFiles[jpegPath] {
+				err := convertPDFToJPEG(p.srcPath(filename), jpegPath)
+				if err != nil {
+					continue
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func (p *Processor) getToken() error {
 	token, err := p.sdk.Token()
 	if err != nil {

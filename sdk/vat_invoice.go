@@ -18,6 +18,9 @@ func (s *SDK) VatInvoice(accessToken string, imageBytes []byte) (*VatInvoiceResp
 		SetFormData(map[string]string{
 			"image": image,
 		}).Post(host)
+	if err != nil {
+		return nil, err
+	}
 
 	var response VatInvoiceResponse
 	err = json.Unmarshal(resp.Body(), &response)

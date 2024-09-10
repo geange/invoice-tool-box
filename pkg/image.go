@@ -7,7 +7,7 @@ import (
 
 func isImageByExt(fileName string) bool {
 	switch strings.ToLower(filepath.Ext(fileName)) {
-	case ".jpg", ".jpeg", ".png":
+	case ".jpg", ".jpeg", ".png", ".pdf":
 		return true
 	default:
 		return false
@@ -37,4 +37,8 @@ func isImage(bs []byte, fileName string) bool {
 		}
 	}
 	return false
+}
+
+func isPDF(name string) bool {
+	return strings.HasSuffix(strings.ToLower(name), ".pdf")
 }
